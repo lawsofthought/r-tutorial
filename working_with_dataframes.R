@@ -106,7 +106,7 @@ Df <- cbind(lexicon.A, behav.data)
 lexicon <- merge(lexicon.A, lexicon.B)
 
 # Merge lexicon.A and lexicon.B based on common variables (including unmatched observations)
-lexicon <- merge(lexicon.A, lexicon.B)
+lexicon <- merge(lexicon.A, lexicon.B, all=TRUE)
 
 
 ###############################
@@ -114,15 +114,15 @@ lexicon <- merge(lexicon.A, lexicon.B)
 ###############################
 
 # Aggregate the latency over valence category
-aggregate(latency ~ valence.category, Df=Df, mean)
-aggregate(latency ~ valence.category, Df=Df, median)
-aggregate(latency ~ valence.category, Df=Df, sd)
+aggregate(latency ~ valence.category, data=Df, mean)
+aggregate(latency ~ valence.category, data=Df, median)
+aggregate(latency ~ valence.category, data=Df, sd)
 
 # Aggregate the latency and accuracy over valence category
-aggregate(cbind(latency, accuracy) ~ valence.category, Df=Df, mean)
+aggregate(cbind(latency, accuracy) ~ valence.category, data=Df, mean)
 
 # Aggregate the latency and accuracy over valence category by subject
-aggregate(cbind(latency, accuracy) ~ valence.category + subject, Df=Df, mean)
+aggregate(cbind(latency, accuracy) ~ valence.category + subject, data=Df, mean)
 
 
 #####################################
@@ -133,7 +133,7 @@ aggregate(cbind(latency, accuracy) ~ valence.category + subject, Df=Df, mean)
 library(reshape2)
 
 # First get a "long" Df set 
-df.long <- aggregate(latency ~ valence.category + subject, Df=Df, mean)
+df.long <- aggregate(latency ~ valence.category + subject, data=Df, mean)
 
 # convert long to wide 
 # template is dcast(df, "ID variables" ~ "variables to swing into cols", value.var = value)
