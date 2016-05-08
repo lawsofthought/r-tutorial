@@ -15,4 +15,9 @@ Topics covered include
 * (Very brief) introduction to multilevel models
 
 
+All the code in this repository is free [1]_ and open source software, distributed according to `GNU public licence`_.
+
+
+.. [1] Free as in freedom.
+.. _GNU public licence: http://www.gnu.org/licenses/gpl-3.0.en.html
 .. _R: https://www.r-project.org/
