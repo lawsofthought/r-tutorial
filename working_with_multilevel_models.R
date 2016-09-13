@@ -18,3 +18,28 @@ xyplot(Reaction ~ Days | Subject,
 # where this effect can vary randomly across subjects
 M.sleep <- lmer(Reaction ~ Days + (Days | Subject),
                 data=sleepstudy)
+
+
+# Fixed effect linear relationship: 
+# Reaction time ~ intercept + slope * Days
+# Random variability in intercept only
+M <- lmer(Reaction ~ 1 + Days + (1| Subject),
+          data = sleepstudy)
+
+# Fixed effect linear relationship: 
+# Reaction time ~ intercept + slope * Days
+# Random variability in slope only 
+M <- lmer(Reaction ~ 1 + Days + (0 + Days| Subject),
+          data = sleepstudy)
+
+# Fixed effect linear relationship: 
+# Reaction time ~ intercept + slope * Days
+# Random variability in both intercept and slope 
+M <- lmer(Reaction ~ 1 + Days + (1 + Days| Subject),
+          data = sleepstudy)
+
+# Fixed linear relationship: 
+# Reaction time ~ intercept
+# Random variability in intercept
+M <- lmer(Reaction ~ 1 + (1 + Days| Subject),
+          data = sleepstudy)
