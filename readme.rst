@@ -12,7 +12,7 @@ Topics covered include
 * Anovas 
 * Linear models
 * Logistic regression and Poisson regression
-* (Very brief) introduction to multilevel models
+* Introduction to multilevel linear and generalized linear models
 
 
 All the code in this repository is free [1]_ and open source software, distributed according to `GNU public licence`_.
