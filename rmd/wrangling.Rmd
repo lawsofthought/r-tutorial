@@ -1,0 +1,148 @@
+---
+title: "Data wrangling with dplyr, tidyr, pipes, et al" 
+author: "Mark Andrews"
+date: "April 5, 2017"
+output:
+  pdf_document: default
+  html_notebook: default
+editor_options:
+  chunk_output_type: inline
+---
+
+# Introduction
+
+Most time spent doing data analysis is spent processing, cleaning, formatting,
+manipulating data, which we will collectively refer to as data *wrangling*.  A
+collection of tools centered around ```dplyr```, ```tidyr```, *pipes* etc.,
+make wrangling a lot less painful and time consuming than it normally is.
+
+All these tools can be loaded using the ```tidyverse``` package of packages.
+```{r message=F}
+library(tidyverse)
+```
+
+For the following examples, we will work with the lexical decision data.
+```{r}
+Df <- read.csv('../data/LexicalDecision.csv', header=T)
+```
+
+# Filtering rows
+
+We can select all rows that meet certain criteria. For example, we might wish to filter out incorrect responses and those that are too slow. Note that ```filter``` returns a new data frame, and so it does not affect your original data frame (which is a good idea really):
+```{r}
+fast.quick.Df <- filter(Df, accuracy == 1, latency < 2000)
+```
+
+We can see that our new data frame is a subset of the original:
+```{r}
+dim(Df)
+dim(fast.quick.Df)
+```
+
+The comma separated filtering conditions used above are conjunctions. We can use Boolean expressions too. 
+```{r}
+# Any observation where latency is not less than 500
+# or greater than 1500ms
+medium.speed.Df <- filter(Df, !(latency < 500 | latency > 1500) )
+```
+
+# Selecting columns
+
+Sometimes we need to make our life easier by just keeping a subset of the variables we have. This obviously especially applies to big data sets. 
+
+* Select *item*, *accuracy*, and *latency* only
+```{r}
+Df.new <- select(Df, item, accuracy, latency)
+head(Df.new)
+```
+* Select all cols from *item* to *valence*
+```{r}
+Df.new <- select(Df, item:valence)
+head(Df.new)
+```
+
+* Select all cols except those postitioned between *item* and *valence*:
+```{r}
+Df.new <- select(Df, -(item:valence))
+head(Df.new)
+```
+
+# Renaming
+
+Rename some variables
+```{r}
+Df.new <- rename(Df, correct = accuracy, rt = latency)
+head(Df.new)
+```
+
+# Create new variable with ```mutate```
+
+We might like to create a new variable that is the log of the frequency of the word, and another that is the log of the reaction time. These are then appended to the existing columns.
+```{r}
+Df.new <- mutate(Df, 
+                 log.latency = log(latency),
+                 log.frequency = log(frequency))
+head(Df.new)
+```
+
+You can also use ```transmute``` to keep just the newly created variables:
+```{r}
+Df.new <- transmute(Df, 
+                    log.latency = log(latency),
+                    log.frequency = log(frequency))
+head(Df.new)
+```
+
+# Grouping and summarizing
+
+The base R ```aggregate``` is very useful when grouping and summarizing data. The ```dplyr``` way is to use ```group_by``` and then ```summarize``` (or ```summarise``` for proud British English speakers). For example, lets group by word length and then get the mean, median, sd, etc of the reaction time.
+```{r}
+by_length <- group_by(Df, length)
+summarise(by_length, 
+          mean = mean(latency),
+          median = median(latency),
+          sd = sd(latency),
+          min = min(latency),
+          max = max(latency),
+          iqr = IQR(latency))
+```
+
+# Pipes
+
+Notice that above, for every operation we applied, we passed in a data frame and got a new data frame back, which we then saved under a new name. A great convenience when doing multiple operations on the same data frame is to *pipe* the output from one command to the input to another, using the pipe operator ```%>%```. That way, we can chain commands together to make powerful combinations.
+
+For example, let use filter, rename, mutate, select, and then summarize using a pipe line:
+```{r}
+Df %>% filter(latency < 2000 & latency > 250) %>%
+  rename(rt = latency) %>%
+  mutate(log.frequency = log(frequency),
+         log.rt = log(rt)) %>%
+  select(item, length, accuracy, log.frequency, log.rt) %>%
+  group_by(length) %>%
+  summarize(mean = mean(log.rt),
+            median = median(log.rt),
+            iqr = IQR(log.rt))
+```
+
+And there was much rejoicing. 
+
+# Long to wide, wide to long using ```tidyr```
+
+In a *tidy* data set, every column is a variable and every row is an observation. Often your data needs to be beaten to this shape.
+
+Let's read in a wide format data, which is a commonly used by SPSS users.
+```{r}
+(Df.wide <- read.csv('../data/widedata.csv', header=T))
+```
+This is fake data, but we'll pretend it gives the memory recall rate of each of 7 subjects in each of three experimental conditions. We can make this into a long, and tidy, format with ```gather```. We need to specify the columns to pull together and then the name, or ```key``` for the newly gathered variables, and then name of the values of these variables.
+
+```{r}
+(Df.long <- gather(Df.wide, conditionA, conditionB, conditionC, key='condition', value='recall'))
+```
+
+The opposite of a ```gather``` is a ```spread```. This converts a long to a wide format. To illustrate, we'll just go backwards from ```D.long``` to ```Df.wide```. Here, we need only state the variable to "spread" and which variable's values to use as the values of the newly spread variables. 
+
+```{r}
+spread(Df.long, key=condition, value=recall)
+```
+

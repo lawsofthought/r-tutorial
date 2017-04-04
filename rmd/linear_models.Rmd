@@ -1,0 +1,97 @@
+---
+title: "Linear models"
+author: "Mark Andrews"
+date: "April 5, 2017"
+output:
+  pdf_document: default
+  html_notebook: default
+editor_options:
+  chunk_output_type: inline
+---
+
+# Introduction
+
+In linear models, we model the expected value of an outcome variable as a linear function of one or more predictor variables. Even when we know that this is not a great modelling assumption, linear models can still be very informative, especially for exploratory work. In any case, it is hard to progress to more complex and realistic models without first understanding linear models.
+
+For the following, we will use some data from the ```psych``` package. So, first load that, and a few other goodies:
+```{r message=FALSE}
+library(MASS)
+library(car)
+library(psych)
+library(ggplot2)
+library(pander) # for making nice tables
+
+data(sat.act)
+Df <- within(sat.act, 
+             {gender <- factor(gender)}
+)
+```
+
+We'll start by predicting *ACT* (a standardized academic test) scores on the basis of education level (measured on a five point scale):
+
+```{r}
+M <- lm(ACT ~ education, data=Df)
+pander(summary(M))
+```
+
+We can visualize this as follows:
+```{r}
+plot(ACT ~ education, data=Df)
+abline(M, lwd=3, col='red')
+```
+
+## Confidence intervals
+We can get confidence intervals as follows:
+```{r}
+confint(M)
+```
+
+
+## Predictions
+On the basis of our fitted model ```M```, we can make predictions about possible values of the predictor variable. 
+```{r}
+hypothetical.data <- data.frame(education = c(1, 2, 5, 10, 15))
+predict(M, newdata=hypothetical.data)
+```
+\pagebreak
+
+
+# Multiple linear regression
+We can add as many predictor variables as we like:
+```{r}
+M <- lm(ACT ~ education + age + gender, data=Df)
+pander(summary(M))
+```
+
+## Collinearity
+We'll evaluate multicollinerity using Variance Inflation Factor (VIF):
+```{r}
+vif(M)
+```
+
+# General linear models
+We can use predictors that categorical as well as continuous in our model. Here, we investigate how the post treatment weight of a patient differs from their pre treatment weight, for three different types of therapy (control, CBT, family therapy):
+
+```{r}
+M <- lm(Postwt ~ Prewt + Treat, data=anorexia)
+pander(summary(M))
+```
+
+# Model evaluation
+
+We can compare any two linear models using the generic ```anova``` function. Here, we'll use this to test the significance of an interaction:
+
+```{r}
+load('../data/beautyeval.Rda')
+
+# Model 1: evaluation score as a function of beauty and sex 
+M.additive <- lm(eval ~ beauty + sex, data=beautydata)
+
+# Model 2: evaluation score as a function of beauty and sex and their interaction
+M.interaction <- lm(eval ~ beauty * sex, data=beautydata)
+
+# Is there an interaction?
+pander(anova(M.additive, M.interaction), missing='')
+```
+
+
