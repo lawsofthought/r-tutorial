@@ -1,7 +1,7 @@
 Introduction to R
 ===================
 
-This is a set of R scripts to be used as a part of a tutorial on R_.
+This is a set of `R Markdown`_ scripts to be used as a part of a tutorial on R_.
 
 Topics covered include
 
@@ -21,3 +21,4 @@ All the code in this repository is free [1]_ and open source software, distribut
 .. [1] Free as in freedom.
 .. _GNU public licence: http://www.gnu.org/licenses/gpl-3.0.en.html
 .. _R: https://www.r-project.org/
+.. _R Markdown: http://rmarkdown.rstudio.com/

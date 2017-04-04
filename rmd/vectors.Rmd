@@ -1,0 +1,126 @@
+---
+title: "Introducing vectors"
+author: "Mark Andrews"
+date: "April 5, 2017"
+output:
+  pdf_document: default
+  html_notebook: default
+editor_options:
+  chunk_output_type: inline
+---
+# Introduction
+
+Vectors are simply arrays or lists of numbers. Most of time, when we are working with data, we work with *data frames*. Data frames can be seen as similar to spreadsheets, i.e. with multiple rows and multiple columns, and each column representing a variable. Here, each column is a vector and often we need to work directly with it.
+
+We'll start by opening up a data set. This data set has one column, called *x* and we'll save this as a stand alone vector, also called *x*.
+
+```{r}
+Df <- read.csv('../data/foo.csv', header=TRUE)
+(x <- Df$x) # The enclosing parentheses allow us to view the vector, and assign it to x
+```
+
+# Let's examine the vector
+
+```{r}
+class(x) # What kind of object is it?
+length(x)
+str(x)   # compactly display internal structure of x
+summary(x) # summarize the info in x
+```
+
+# Indexing 
+* What is the values of elements 68?
+```{r}
+x[68]
+```
+
+# Slicing
+Slicing will give us a contiguous subset of the vector. For example, what are the values of elements 12 to 18 inclusive? 
+```{r}
+x[12:18]
+```
+
+# Multiple indices and subsets
+
+What are the values of elements 17, 89, 39, 42? To do this, first create a vector of those elements and call it *indx* and then use this to slice *x* 
+```{r}
+indx <- c(17, 89, 39, 42)
+x[indx]
+```
+This is the same thing as doing 
+```{r}
+x[c(17, 89, 39, 42)]
+```
+
+What if we needed to find all elements that are equal to or less than the value of 12? Here, we can create an indexing vector called *indx* and then use this to extract the elements:
+```{r}
+(indx <- which(x <= 12)) # Get indices of elements whose values are = or < 12.
+x[indx]
+```
+We also use Boolean indices here:
+```{r}
+(indx <- x <= 12)
+x[indx]
+```
+
+Note that to find how many elements are equal to e.g. 12, we can do
+```{r}
+indx <- x == 12
+sum(indx) # Sums up the Boolean vector 
+```
+which gives the same result as 
+```{r}
+indx <- which(x == 12)
+length(indx)
+```
+
+**Warning**: Remember that *<=* is an inequality test, and *<-* is an assignment operator, and *==* is an equality test and *=* is an assignment operator.
+
+We can use Boolean operators to do more interesting subsetting operations:
+```{r}
+indx <- x == 11 | x > 17 # elements that equal to 11 OR greater than 17
+x[indx]
+indx <- x == 11 | x == 13 | x == 17 #  elements that are equal to 11 or 13 or 17
+x[indx]
+indx <- x %in% c(11, 13, 17) # Same as above, i.e. values that are elements of set 11, 13, 17
+x[indx]
+```
+
+
+
+## Descriptive statistics
+
+We can easily get things like *mean*, *median*, *sd*, etc, etc.
+
+```{r}
+mean(x)
+median(x)
+sd(x)
+var(x)
+min(x)
+max(x)
+range(x)
+IQR(x) # inter quartile range
+```
+
+This will give us some standard percentiles,
+```{r}
+quantile(x)
+```
+and we can ask for specific percentiles too:
+```{r}
+quantile(x, probs = c(0.025, 0.25, 0.5, 0.75, 0.975))
+```
+This will do a frequency tabulation of the values of `x`.
+```{r}
+table(x)
+```
+
+## Concatenating vectors
+
+We can join up vectors using the generic "combine" function *c()*:
+```{r}
+z <- c(1, 2, 3, 27, 42)
+(y <- c(x, z))
+```
+
