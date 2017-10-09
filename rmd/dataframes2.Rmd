@@ -1,0 +1,91 @@
+---
+title: "Introducing data frames"
+author: "Mark Andrews"
+date: "October 9, 2017"
+output:
+  pdf_document: default
+editor_options:
+  chunk_output_type: inline
+---
+```{r, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, include=TRUE, message = FALSE, warning = FALSE)
+```
+
+
+```{r}
+library(dplyr)
+library(readr)
+```
+
+
+# Introduction
+
+Most of time, when we are working with data, we work with *data frames*. Data frames can be seen as similar to spreadsheets, i.e. with multiple rows and multiple columns, and each column representing a variable. In this note, we will deal with data-frame using the `tidyverse` approach. You can do more or less everything shown below in a `base R` way too, but on balance I think the `tidyverse` way is the more efficient way and more likely to be way we all be doing it in the future anyway. 
+
+# Read in a data frame from csv file
+
+We'll start by reading in a csv file as a data frame (which could be done from the RStudio `Import Dataset` menu in `Environment`):
+
+```{r}
+(Df <- read_csv('../data/LexicalDecision.csv'))
+```
+Note that `read_csv`, which is part of the `readr` package, which is loaded above.
+
+# Quick summary of your data frame
+
+```{r}
+summary(Df)
+```
+
+# Referring directly to specific variables 
+
+We can select specifc variables like so
+```{r, results='hide'}
+Df$subject
+```
+or
+```{r, results='hide'}
+Df[['subject']]
+```
+
+# Rename variable names 
+
+You can rename as many variables as you like as follows:
+```{r}
+(Df <- rename(Df,
+              word = item,
+              reaction.time = latency))
+```
+
+# Subsetting your data frame
+
+## Choose a subset of variables (i.e., columns)
+
+```{r}
+select(Df, subject, word, accuracy, reaction.time)
+```
+
+## Choose a subset of the observations (i.e., rows)
+
+In the following, we choose rows 10 to 20:
+```{r}
+slice(Df, 10:20)
+```
+or 
+```{r}
+slice(Df, c(10, 20, 30, 40:45)) # choose rows 10, 20, 30, 40-45
+```
+and so on. 
+
+## Filtering observations
+
+The following will allow us to select only those observations where the reaction times are less than 2000 milliseconds.
+```{r}
+filter(Df, reaction.time < 2000)
+```
+While this will allow us to select the observations where the reaction times are above 200 and below 2000 milliseconds.
+```{r}
+filter(Df, reaction.time > 200 & reaction.time < 2000)
+```
+
+
