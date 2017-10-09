@@ -1,0 +1,250 @@
+---
+title: "Psychology's Core Statistics Curriculum (More or less)"
+output: 
+  pdf_document:
+    keep_tex: no
+    pandoc_args: [
+      "-V", "classoption=twocolumn"
+    ]
+geometry: top=1cm, bottom=2cm, left=1cm, right=1cm
+tables: true
+---
+
+```{r, message=FALSE}
+library(dplyr)
+library(ggplot2)
+```
+
+```{r setup, include=FALSE}
+set.seed(147001)
+knitr::opts_chunk$set(echo = TRUE)
+library(xtable)
+library(knitr)
+library(schoRsch)
+```
+
+## Read in a data file
+```{r cars}
+Df <- read.csv('../data/memorytest.csv')
+```
+## Descriptive statistics
+
+Now, we'll get the mean, median, maximum, minimum, standard deviation, sample size, of the memory scores for both conditions.
+```{r}
+descriptives <- Df %>% group_by(condition) %>%
+  summarize(mean = mean(memory),
+            median = median(memory),
+            max = max(memory),
+            min = min(memory),
+            sd = sd(memory),
+            size = n())
+```
+```{r, results='asis', echo=FALSE}
+options(xtable.comment = FALSE)
+options(xtable.booktabs = TRUE)
+xtable(descriptives)
+```
+
+## Independent samples t-test
+An independent samples t-test with the homogeneity of variances assumption is as follows:
+```{r}
+results <- t.test(memory ~ condition, data=Df, 
+                  var.equal=T)
+```
+```{r, results='asis', echo=FALSE}
+
+options(xtable.comment = FALSE)
+options(xtable.booktabs = TRUE)
+xtable(t_out(results, print=FALSE))
+```
+## Paired samples t-test
+```{r, echo=F}
+N <- 25
+```
+
+For the paired samples t-test, we'll make up some data. We'll make two paired samples of normally distributed random numbers of size $N=`r N`$.
+```{r}
+x <- rnorm(N)
+y <- rnorm(N)
+results <- t.test(x,y, paired=T)
+```
+```{r, results='asis', echo=FALSE}
+
+options(xtable.comment = FALSE)
+options(xtable.booktabs = TRUE)
+xtable(t_out(results, print=FALSE))
+```
+
+
+## Z-scores
+<!--We calculate z scores my subtracting the mean from a set of values and dividing by their standard deviation.-->
+```{r}
+scores <- rnorm(N, mean=100, sd=15)
+z.scores <- (scores - mean(scores)) / sd(scores)
+```
+
+We get the area under the normal curve below each z-score as follows:
+```{r}
+area.under.curve <- pnorm(z.scores)
+```
+
+## $\chi^2$ test
+
+We'll make a $2 \times 2$ contingency table:
+```{r}
+X <- matrix(c(120, 57, 75, 17), ncol = 2)
+```
+A $\chi^2$ test (with no continuity correction) is as follows:
+```{r}
+results <- chisq.test(X, correct=FALSE)
+```
+
+```{r, results='asis', echo=FALSE}
+options(xtable.comment = FALSE)
+options(xtable.booktabs = TRUE)
+xtable(chi_out(results, print=FALSE))
+```
+
+## Simple linear regression
+
+First,  we'll read in our data from another csv file.
+```{r}
+Df <- read.csv('../data/chocolate.csv')
+```
+
+Now, we'll do a scatter plot and line of best fit. 
+```{r}
+qplot(chocolate, happiness, data=Df) + 
+  geom_smooth(method='lm')
+```
+
+The regression model is fit with 
+```{r}
+M <- lm(happiness~chocolate, data=Df)
+```
+```{r echo=F}
+S <- summary(M)
+r.sq <- round(S$r.squared, 2)
+adj.r.sq <- round(S$adj.r.squared, 2)
+F.stat <- S$fstatistic
+df.1 <- F.stat['numdf']
+df.2 <- F.stat['dendf']
+F.stat <- round(F.stat['value'], 2)
+```
+
+From this, we have $R^2=`r r.sq`$ (adjusted $R^2=`r adj.r.sq`$), $F(`r df.1`, `r df.2`) = `r F.stat`$. The coefficients table is as follows:
+```{r, results='asis', echo=FALSE}
+options(xtable.comment = FALSE)
+options(xtable.booktabs = TRUE)
+xtable(summary(M))
+```
+
+## One-way ANOVA
+Again here, we'll read in a new data set from a csv file. 
+
+```{r}
+Df <- read.csv('../data/antidepressants.csv')
+```
+
+For this, we coul use the `lm` (linear model) command, but instead we'll use `aov`. 
+```{r}
+M <- aov(depression ~ drug, data=Df)
+```
+
+```{r, results='asis', echo=FALSE}
+options(xtable.comment = FALSE)
+options(xtable.booktabs = TRUE)
+xtable(summary(M))
+```
+
+## Mann Whitney U test:
+
+```{r}
+x <- rnorm(10)
+y <- rnorm(12)
+results <- wilcox.test(x, y)
+```
+
+
+The U statistic is $U = `r results$statistic`$, $p=`r round(results$p.value, 2)`$.
+
+## Wilcoxon signed ranks test:
+```{r}
+N <- 10
+x <- rnorm(N)
+y <- rnorm(N)
+results <- wilcox.test(x, y, paired = TRUE) 
+```
+
+The W statistic is $W = `r results$statistic`$, $p=`r round(results$p.value, 2)`$.
+
+## Multiple linear regression
+
+```{r}
+Df <- read.csv('../data/stress.csv')
+M <- lm(stress ~ social + extra + perfect,
+        data=Df)
+```
+
+```{r echo=F}
+S <- summary(M)
+r.sq <- round(S$r.squared, 2)
+adj.r.sq <- round(S$adj.r.squared, 3)
+F.stat <- S$fstatistic
+df.1 <- F.stat['numdf']
+df.2 <- F.stat['dendf']
+F.stat <- round(F.stat['value'], 2)
+```
+
+From this, we have $R^2=`r r.sq`$ (adjusted $R^2=`r adj.r.sq`$), $F(`r df.1`, `r df.2`) = `r F.stat`$. The coefficients table is as follows:
+```{r, results='asis', echo=FALSE}
+options(xtable.comment = FALSE)
+options(xtable.booktabs = TRUE)
+xtable(summary(M))
+```
+
+## Factorial Anova 
+
+Here, we look at the effect of two variables (drug type and therapy type) and their interaction on depression scores.
+```{r}
+Df <- read.csv('../data/drugtherapy.csv')
+M <- aov(depression ~ drug*therapy, data=Df)
+```
+
+
+```{r, results='asis', echo=FALSE}
+options(xtable.comment = FALSE)
+options(xtable.booktabs = TRUE)
+xtable(summary(M))
+```
+
+## Repeated Measures Two Way Anova
+
+```{r}
+Df <- read.csv('../data/movies.csv')
+M <- aov(stress ~ music * image +
+           Error(PID / (music * image)),
+         data=Df)
+```
+
+
+```{r, results='asis', echo=FALSE}
+options(xtable.comment = FALSE)
+options(xtable.booktabs = TRUE)
+xtable(M)
+```
+
+## Repeated Measures Three Way Anova (One Between, Two Within) Anova 
+```{r}
+Df <- read.csv('../data/movies2.csv')
+M <- aov(stress ~ time * music * image + 
+           Error(PID / (music * image)),
+         data=Df)
+```
+```{r, results='asis', echo=FALSE}
+options(xtable.comment = FALSE)
+options(xtable.booktabs = TRUE)
+xtable(M)
+```
+
+
