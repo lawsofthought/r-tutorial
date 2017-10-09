@@ -3,7 +3,8 @@ title: "Working with data frames"
 author: "Mark Andrews"
 date: "October 9, 2017"
 output:
-  pdf_document: default
+  pdf_document:
+    keep_tex: yes
 editor_options:
   chunk_output_type: inline
 ---
