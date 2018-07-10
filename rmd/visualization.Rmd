@@ -4,7 +4,6 @@ author: "Mark Andrews"
 date: "July 9, 2017"
 output:
   pdf_document: default
-  html_notebook: default
 editor_options:
   chunk_output_type: inline
 ---
