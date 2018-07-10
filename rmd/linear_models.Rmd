@@ -1,10 +1,9 @@
 ---
 title: "Linear models"
 author: "Mark Andrews"
-date: "April 5, 2017"
+date: "July 5, 2018"
 output:
   pdf_document: default
-  html_notebook: default
 editor_options:
   chunk_output_type: inline
 ---
@@ -18,13 +17,12 @@ For the following, we will use some data from the ```psych``` package. So, first
 library(MASS)
 library(car)
 library(psych)
+library(dplyr)
 library(ggplot2)
 library(pander) # for making nice tables
 
-data(sat.act)
-Df <- within(sat.act, 
-             {gender <- factor(gender)}
-)
+Df <- mutate(sat.act, 
+             gender = factor(gender))
 ```
 
 We'll start by predicting *ACT* (a standardized academic test) scores on the basis of education level (measured on a five point scale):
@@ -36,8 +34,10 @@ pander(summary(M))
 
 We can visualize this as follows:
 ```{r}
-plot(ACT ~ education, data=Df)
-abline(M, lwd=3, col='red')
+ggplot(Df, 
+       aes(x= education, y=ACT)) +
+  geom_point() + 
+  stat_smooth(method='lm')
 ```
 
 ## Confidence intervals
@@ -70,28 +70,36 @@ vif(M)
 ```
 
 # General linear models
-We can use predictors that categorical as well as continuous in our model. Here, we investigate how the post treatment weight of a patient differs from their pre treatment weight, for three different types of therapy (control, CBT, family therapy):
+We can use predictors that categorical as well as continuous in our model. Here, we investigate how the post treatment weight of a patient differs from their pre treatment weight, for three different types of therapy (control, CBT, family therapy).
 
+First, we'll visualize the data (we'll turn off standard error shading to allow the lines to be seen more easily):
+```{r}
+ggplot(anorexia,
+       aes(x = Prewt, y = Postwt, col=Treat)) +
+  geom_point() +
+  stat_smooth(method='lm', se=F) +
+  theme_classic()
+```
+
+Now, we'll do a *varying intercept*, which is also known as an *ANCOVA*:
 ```{r}
 M <- lm(Postwt ~ Prewt + Treat, data=anorexia)
 pander(summary(M))
 ```
 
-# Model evaluation
+We also do a *varying slopes and varying intercepts* model. This is a type of interaction model:
+```{r}
+M_interaction <- lm(Postwt ~ Prewt * Treat, data=anorexia)
+pander(summary(M_interaction))
+```
 
-We can compare any two linear models using the generic ```anova``` function. Here, we'll use this to test the significance of an interaction:
+## Model evaluation
+
+We can compare any two linear models using the generic ```anova``` function. Here, we'll use this to test whether the varying slopes and intercepts model is a better fit to the data than the just varying intercepts model:
 
 ```{r}
-load('../data/beautyeval.Rda')
-
-# Model 1: evaluation score as a function of beauty and sex 
-M.additive <- lm(eval ~ beauty + sex, data=beautydata)
-
-# Model 2: evaluation score as a function of beauty and sex and their interaction
-M.interaction <- lm(eval ~ beauty * sex, data=beautydata)
-
-# Is there an interaction?
-pander(anova(M.additive, M.interaction), missing='')
+model_comparison <- anova(M, M_interaction)
+pander(model_comparison, missing='')
 ```
 
 
