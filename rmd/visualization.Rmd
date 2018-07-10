@@ -1,7 +1,7 @@
 ---
-title: "Data visualization with ggplot"
+title: "Data visualization"
 author: "Mark Andrews"
-date: "April 5, 2017"
+date: "July 9, 2017"
 output:
   pdf_document: default
   html_notebook: default
@@ -10,29 +10,35 @@ editor_options:
 ---
 # Introduction
 
-```ggplot``` is essentially a mini-language for data visualization. Because of its complexity and versality, it takes some getting used to. It is worth the effort. It allows you to explore your data quickly and efficiently. 
+R provides us with many tools for doing plotting and visualization. The dominant modern way is to use a program called
+```ggplot```, which is essentially a mini-language for data visualization. 
 
 ```{r}
+library(readr)
 library(ggplot2)
-Df <- read.csv('../data/LexicalDecision.csv', header=T)
+
 ```
 
+We'll read in our data
+```{r}
+Df <- read_csv('../data/LexicalDecision.csv')
+```
 
 # A simple scatter plot
 
-We start by specifying the data frames and which variables should be assigned to the x and y axess. Then we specify that we want points on the values.  
+We use `ggplot` by first specifying the data frame to use and then which variables should be assigned to the x and y axes. Then we specify that we want points for the values.  
 ```{r fig.height=3}
 ggplot(Df, aes(x=log(frequency), y=latency)) + geom_point()
 ```
 
-We can add another layer that is a line of best fit, plus standard error:
+We can add another *layer* that is a line of best fit, plus standard error:
 ```{r fig.height=3}
 ggplot(Df, aes(x=log(frequency), y=latency)) + 
   geom_point() +
   stat_smooth(method='lm')
 ```
 
-We can play with the properties of everything:
+We can play with the properties of all the features of our plot:
 ```{r fig.height=3}
 ggplot(Df, aes(x=log(frequency), y=latency)) + 
   geom_point(size=1, shape=1, colour='blue') +
@@ -42,7 +48,7 @@ ggplot(Df, aes(x=log(frequency), y=latency)) +
 
 # Colour and shape codes
 
-One of the great things about ggplot is how it allows us to color code our data. For example, here we make a scatter plot and color code the points that belong to males and females. This is possible in base R plots, but it is just much easier here.
+One of the great things about `ggplot` is how it allows us to colour code our data. For example, here we make a scatter plot and color code the points that belong to males and females. (When using alternative plotting methods to `ggplot`, doing things like this become very cumbersome):
 ```{r}
 # Load a new data set
 load('../data/beautyeval.Rda')
