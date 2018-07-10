@@ -1,0 +1,93 @@
+---
+title: "Anova"
+author: "Mark Andrews"
+date: "July 5, 2018"
+output:
+  pdf_document: default
+editor_options:
+  chunk_output_type: inline
+---
+
+```{r message=FALSE}
+library(dplyr)
+library(pander)
+library(ggplot2)
+library(readr)
+library(lme4)
+```
+
+
+# One-way Anova
+
+```{r}
+data(PlantGrowth)
+M <- aov(weight ~ group, data=PlantGrowth)
+pander(M)
+```
+
+We can do Tukey's range test to perform multiple comparisons:
+```{r}
+TukeyHSD(M)
+```
+
+Note that we can also we can do Anova using `lm()`:
+```{r}
+M <- lm(weight ~ group, data=PlantGrowth)
+anova(M)
+```
+
+# Two-way anova
+
+```{r}
+data("ToothGrowth")
+
+ggplot(ToothGrowth,
+       aes(x = factor(dose), y = len, col = supp)) +
+  geom_boxplot() +
+  theme_classic()
+
+M <- aov(len ~ supp*dose, data=ToothGrowth)
+
+```
+
+# Repeated measures Anova
+
+## Oneway 
+
+```{r}
+Df <- read_table('../data/recall_data.txt')
+
+M <- aov(Recall ~ Valence + Error(Subject/Valence), data=Df)
+pander(M)
+```
+
+Multiple comparisons, with Bonferroni correction
+```{r}
+
+with(Df, 
+     pairwise.t.test(x=Recall, g=Valence), 
+     p.adjust.methods='bonferroni', 
+     paired=T)
+```
+
+
+
+## Twoway
+```{r}
+Df <- read_table('../data/recall_data2.txt')
+M <- aov(Recall ~ Valence*Task + Error(Subject/(Task*Valence)), data=Df)
+pander(M)
+```
+
+
+# Multilevel models
+
+The above can be done using multilevel models too.
+
+```{r}
+M <- lmer(Recall ~ Valence*Task + (1|Subject),
+          data=Df)
+```
+
+
+
