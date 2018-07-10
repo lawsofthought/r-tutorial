@@ -1,4 +1,4 @@
-Introduction to R
+# Introduction to R
 ===================
 
 This is a set of `R Markdown`_ scripts to be used as a part of a tutorial on R_.
